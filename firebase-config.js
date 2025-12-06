@@ -1,4 +1,5 @@
 // firebase-config.js
+// (Paste your actual keys below exactly as shown)
 window.firebaseConfig = {
   apiKey: "AIzaSyDcYaXhTX02LYPngQMD_HcJC4hTMKLV8I",
   authDomain: "shadhin-portfolio.firebaseapp.com",
