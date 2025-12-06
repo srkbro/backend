@@ -1,11 +1,9 @@
-
-// Rename this file to firebase-config.js and replace the keys with your Firebase project config.
-// How to get config: Firebase Console -> Project Settings -> Your apps -> Add web app -> SDK config
+// firebase-config.js
 window.firebaseConfig = {
-  apiKey: "<YOUR_API_KEY>",
-  authDomain: "<YOUR_PROJECT>.firebaseapp.com",
-  projectId: "<YOUR_PROJECT>",
-  storageBucket: "<YOUR_PROJECT>.appspot.com",
-  messagingSenderId: "<SENDER_ID>",
-  appId: "<APP_ID>"
+  apiKey: "AIzaSyDcYaXhTX02LYPngQMD_HcJC4hTMKLV8I",
+  authDomain: "shadhin-portfolio.firebaseapp.com",
+  projectId: "shadhin-portfolio",
+  storageBucket: "shadhin-portfolio.firebasestorage.app",
+  messagingSenderId: "362689759294",
+  appId: "1:362689759294:web:d99320584d548e5724296f"
 };
