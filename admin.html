@@ -1,214 +1,287 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>SHADHIN — Admin</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Swadhin — Simple Admin (Backup)</title>
   <style>
-    body { font-family: system-ui, Arial; max-width: 900px; margin: 20px auto; padding: 10px; }
-    .box { border: 1px solid #ddd; padding: 12px; margin-bottom: 12px; border-radius: 8px; }
-    textarea, input { width: 100%; padding: 8px; margin: 6px 0; }
-    button { padding: 8px 12px; margin-right: 8px; cursor: pointer; }
-    .msg { background: #f9f9f9; padding: 8px; border-radius: 6px; margin-bottom: 8px; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial; background:#fff; color:#111; padding:30px; }
+    .container { max-width:980px; margin:0 auto; }
+    h1 { font-size:40px; margin:8px 0 24px; font-weight:800; letter-spacing:-1px; }
+    .box { border:1px solid #e6e6e6; padding:20px; border-radius:8px; margin-bottom:18px; background:#fafafa; }
+    input[type="text"], input[type="email"], input[type="password"], textarea, select {
+      width:100%; padding:10px; margin:6px 0 12px; box-sizing:border-box; border:1px solid #ddd; border-radius:6px; font-size:14px;
+    }
+    button { padding:8px 14px; border-radius:6px; border:1px solid #bbb; background:#f7f7f7; cursor:pointer; margin-right:8px; }
+    .btn-danger { background:#fcebea; border-color:#f5c6cb; color:#b02a37; }
+    .muted { color:#777; font-size:13px; }
+    .status { margin-top:8px; color:#c0392b; font-weight:600; }
+    .green { color: #0b8a4d; }
+    .table { width:100%; border-collapse:collapse; margin-top:10px; }
+    .table th, .table td { border-bottom:1px solid #eee; text-align:left; padding:8px 6px; vertical-align:top; font-size:14px; }
+    .small { font-size:13px; color:#555; }
+    pre { background:#222; color:#fff; padding:12px; border-radius:6px; overflow:auto; }
+    .row { display:flex; gap:12px; align-items:center; }
+    .flex { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
   </style>
 </head>
 <body>
+  <div class="container">
+    <h1>Swadhin — Simple Admin (Backup)</h1>
 
-  <h1>SHADHIN — Admin</h1>
-
-  <!-- AUTH SECTION -->
-  <div id="authBox" class="box">
-    <h3>Sign in</h3>
-    <input id="email" placeholder="Email" />
-    <input id="password" placeholder="Password" type="password" />
-    <div style="margin-top:8px;">
-      <button id="btnLogin">Sign in</button>
-      <button id="btnSignup">Create account</button>
-      <button id="btnSignOut" style="display:none">Sign out</button>
+    <div id="authBox" class="box">
+      <h3>Sign in</h3>
+      <div id="authForm">
+        <input id="email" type="email" placeholder="Email" />
+        <input id="password" type="password" placeholder="Password" />
+        <div class="flex">
+          <button id="btnSignIn">Sign in</button>
+          <button id="btnCreate">Create account</button>
+          <button id="btnSignOut" style="display:none;">Sign out</button>
+        </div>
+        <div id="authInfo" class="status">Not signed in.</div>
+      </div>
     </div>
-    <div id="authInfo" style="margin-top:8px;color:#d00;font-size:14px;"></div>
-  </div>
 
-  <!-- ADMIN AREA -->
-  <div id="adminArea" style="display:none">
-
-    <div class="box">
+    <div id="adminArea" class="box" style="display:none;">
       <h3>Site Content (Edit & Save)</h3>
-      <div id="contentList"></div>
+      <div id="contentList" class="small">Loading...</div>
 
       <h4>Edit Key</h4>
       <input id="contentKey" placeholder="key name (e.g. about_text)" />
       <textarea id="contentValue" rows="4" placeholder="value here"></textarea>
-      <button id="saveContent">Save</button>
-      <button id="deleteContent">Delete</button>
+      <div class="flex">
+        <button id="saveContent">Save</button>
+        <button id="deleteContent" class="btn-danger">Delete</button>
+      </div>
     </div>
 
-    <div class="box">
+    <div id="messagesBox" class="box" style="display:none;">
       <h3>Contact Messages</h3>
-      <div id="messagesList">Loading...</div>
-      <button id="refreshMsgs">Refresh</button>
-      <button id="exportMsgs">Export JSON</button>
+      <div id="messagesList" class="small">Loading...</div>
+      <div style="margin-top:12px;">
+        <button id="refreshMsgs">Refresh</button>
+        <button id="exportMsgs">Export JSON</button>
+      </div>
+    </div>
+
+    <div style="margin-top:18px;" class="muted">
+      <strong>Note:</strong> Make sure <code>firebase-config.js</code> is uploaded in repo root. If you see <span style="color:#c0392b">"Firebase config not found"</span> then config file not loaded.
     </div>
   </div>
 
-  <!-- Firebase SDK -->
+  <!-- Firebase compat SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
-  <!-- YOUR CONFIG FILE (IMPORTANT!) -->
+  <!-- Your firebase-config must be uploaded to repo root -->
   <script src="firebase-config.js"></script>
 
   <script>
+    // Quick safety check
     if (!window.firebaseConfig) {
-      document.getElementById("authInfo").innerText =
-        "Firebase config not found! Make sure firebase-config.js is uploaded.";
+      document.getElementById('authInfo').innerText = 'Firebase config not found! Make sure firebase-config.js is uploaded.';
+      document.getElementById('authInfo').style.color = '#c0392b';
+      console.error('Firebase config not found (window.firebaseConfig missing).');
     }
 
-    const app = firebase.initializeApp(window.firebaseConfig || {});
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+    // Initialize Firebase
+    const app = window.firebaseConfig ? firebase.initializeApp(window.firebaseConfig) : null;
+    const auth = app ? firebase.auth() : null;
+    const db = app ? firebase.firestore() : null;
 
-    const adminArea = document.getElementById("adminArea");
-    const authBox = document.getElementById("authBox");
-    const authInfo = document.getElementById("authInfo");
+    // Elements
+    const emailEl = document.getElementById('email');
+    const passEl = document.getElementById('password');
+    const btnSignIn = document.getElementById('btnSignIn');
+    const btnCreate = document.getElementById('btnCreate');
+    const btnSignOut = document.getElementById('btnSignOut');
+    const authInfo = document.getElementById('authInfo');
+    const adminArea = document.getElementById('adminArea');
+    const messagesBox = document.getElementById('messagesBox');
+    const contentList = document.getElementById('contentList');
+    const contentKey = document.getElementById('contentKey');
+    const contentValue = document.getElementById('contentValue');
+    const saveContent = document.getElementById('saveContent');
+    const deleteContent = document.getElementById('deleteContent');
+    const refreshMsgs = document.getElementById('refreshMsgs');
+    const messagesList = document.getElementById('messagesList');
+    const exportMsgs = document.getElementById('exportMsgs');
 
-    const btnLogin = document.getElementById("btnLogin");
-    const btnSignup = document.getElementById("btnSignup");
-    const btnSignOut = document.getElementById("btnSignOut");
+    // Auth actions
+    if (auth) {
+      btnCreate.addEventListener('click', async () => {
+        const e = emailEl.value.trim(); const p = passEl.value;
+        if (!e || !p) return alert('Email and password required.');
+        try {
+          await auth.createUserWithEmailAndPassword(e, p);
+          alert('Account created! Please sign in.');
+        } catch (err) { alert('Create account error: ' + err.message); console.error(err); }
+      });
 
-    const emailEl = document.getElementById("email");
-    const passEl = document.getElementById("password");
+      btnSignIn.addEventListener('click', async () => {
+        const e = emailEl.value.trim(); const p = passEl.value;
+        if (!e || !p) return alert('Email and password required.');
+        try {
+          await auth.signInWithEmailAndPassword(e, p);
+        } catch (err) { alert('Sign in error: ' + err.message); console.error(err); }
+      });
 
-    const contentList = document.getElementById("contentList");
-    const contentKey = document.getElementById("contentKey");
-    const contentValue = document.getElementById("contentValue");
-    const saveContent = document.getElementById("saveContent");
-    const deleteContent = document.getElementById("deleteContent");
+      btnSignOut.addEventListener('click', async () => {
+        try { await auth.signOut(); } catch (err) { console.error(err); }
+      });
 
-    const messagesList = document.getElementById("messagesList");
-    const refreshMsgs = document.getElementById("refreshMsgs");
-    const exportMsgs = document.getElementById("exportMsgs");
+      // Auth state listener
+      auth.onAuthStateChanged(user => {
+        if (user) {
+          // signed in
+          authInfo.innerText = 'Signed in as: ' + (user.email || user.uid);
+          authInfo.style.color = '#0b8a4d';
+          btnSignOut.style.display = 'inline-block';
+          btnSignIn.style.display = 'inline-block';
+          adminArea.style.display = 'block';
+          messagesBox.style.display = 'block';
+          // Load data
+          loadSiteContent();
+          loadMessages();
+        } else {
+          // signed out
+          authInfo.innerText = 'Not signed in.';
+          authInfo.style.color = '#c0392b';
+          btnSignOut.style.display = 'none';
+          adminArea.style.display = 'none';
+          messagesBox.style.display = 'none';
+          contentList.innerHTML = 'Sign in to view site content.';
+          messagesList.innerHTML = 'Sign in to view messages.';
+        }
+      });
+    } else {
+      // No firebase
+      document.getElementById('authInfo').innerText = 'Firebase not initialized. Check firebase-config.js';
+      document.getElementById('authInfo').style.color = '#c0392b';
+    }
 
-    // AUTH HANDLING
-    btnSignup.onclick = async () => {
+    // SITE CONTENT FUNCTIONS
+    async function loadSiteContent() {
+      if (!db) return;
+      contentList.innerHTML = 'Loading...';
       try {
-        await auth.createUserWithEmailAndPassword(emailEl.value, passEl.value);
-        authInfo.innerText = "Account created! Please sign in.";
-      } catch (e) {
-        authInfo.innerText = e.message;
+        const snap = await db.collection('site_content').get();
+        if (snap.empty) {
+          contentList.innerHTML = '<div class="small">No site content yet.</div>';
+          return;
+        }
+        const rows = [];
+        snap.forEach(doc => {
+          const d = doc.data();
+          rows.push(`<tr><td style="width:35%"><strong>${escapeHtml(doc.id)}</strong></td><td>${escapeHtml(String(d.value || ''))}</td><td><button data-key="${escapeHtml(doc.id)}" class="editKeyBtn">Edit</button></td></tr>`);
+        });
+        contentList.innerHTML = '<table class="table"><thead><tr><th>Key</th><th>Value</th><th></th></tr></thead><tbody>' + rows.join('') + '</tbody></table>';
+        // attach edit buttons
+        document.querySelectorAll('.editKeyBtn').forEach(b => {
+          b.addEventListener('click', (ev) => {
+            const k = ev.currentTarget.dataset.key;
+            pickKeyForEdit(k);
+          });
+        });
+      } catch (err) {
+        console.error(err);
+        contentList.innerHTML = 'Failed to load site content: ' + err.message;
       }
-    };
+    }
 
-    btnLogin.onclick = async () => {
+    async function pickKeyForEdit(key) {
       try {
-        await auth.signInWithEmailAndPassword(emailEl.value, passEl.value);
-      } catch (e) {
-        authInfo.innerText = e.message;
-      }
-    };
+        const doc = await db.collection('site_content').doc(key).get();
+        if (!doc.exists) {
+          alert('No such key');
+          return;
+        }
+        contentKey.value = key;
+        contentValue.value = doc.data().value || '';
+        contentKey.focus();
+      } catch (err) { console.error(err); alert('Error: ' + err.message); }
+    }
 
-    btnSignOut.onclick = () => auth.signOut();
-
-    auth.onAuthStateChanged((user) => {
-      if (user) {
-        authInfo.innerText = "Signed in as: " + user.email;
-        adminArea.style.display = "block";
-        btnSignOut.style.display = "inline-block";
-        btnLogin.style.display = "none";
-        btnSignup.style.display = "none";
-        loadContent();
-        loadMessages();
-      } else {
-        authInfo.innerText = "Not signed in.";
-        adminArea.style.display = "none";
-        btnSignOut.style.display = "none";
-        btnLogin.style.display = "inline-block";
-        btnSignup.style.display = "inline-block";
-      }
+    saveContent.addEventListener('click', async () => {
+      const k = contentKey.value.trim();
+      const v = contentValue.value;
+      if (!k) return alert('Key required.');
+      try {
+        await db.collection('site_content').doc(k).set({ value: v });
+        alert('Saved.');
+        await loadSiteContent();
+      } catch (err) { console.error(err); alert('Save failed: ' + err.message); }
     });
 
-    // LOAD CONTENT
-    async function loadContent() {
-      contentList.innerHTML = "Loading...";
-      const snap = await db.collection("site_content").get();
-      contentList.innerHTML = "";
-      snap.forEach((doc) => {
-        const data = doc.data();
-        const div = document.createElement("div");
-        div.className = "msg";
-        div.innerHTML = "<b>" + doc.id + "</b><br>" + data.value;
-        div.onclick = () => {
-          contentKey.value = doc.id;
-          contentValue.value = data.value;
-        };
-        contentList.appendChild(div);
-      });
-    }
+    deleteContent.addEventListener('click', async () => {
+      const k = contentKey.value.trim();
+      if (!k) return alert('Key required.');
+      if (!confirm('Delete key "' + k + '" ?')) return;
+      try {
+        await db.collection('site_content').doc(k).delete();
+        alert('Deleted.');
+        contentKey.value = ''; contentValue.value = '';
+        await loadSiteContent();
+      } catch (err) { console.error(err); alert('Delete failed: ' + err.message); }
+    });
 
-    saveContent.onclick = async () => {
-      if (!contentKey.value) return alert("Enter key name first!");
-      await db.collection("site_content").doc(contentKey.value).set({
-        value: contentValue.value,
-      });
-      alert("Saved!");
-      loadContent();
-    };
-
-    deleteContent.onclick = async () => {
-      if (!contentKey.value) return alert("Enter key first!");
-      await db.collection("site_content").doc(contentKey.value).delete();
-      alert("Deleted!");
-      loadContent();
-    };
-
-    // MESSAGES
+    // MESSAGES FUNCTIONS
     async function loadMessages() {
-      messagesList.innerHTML = "Loading...";
-      const snap = await db
-        .collection("contact_messages")
-        .orderBy("timestamp", "desc")
-        .get();
-
-      messagesList.innerHTML = "";
-      const all = [];
-
-      snap.forEach((doc) => {
-        const d = doc.data();
-        all.push(d);
-        const div = document.createElement("div");
-        div.className = "msg";
-        div.innerHTML =
-          "<b>" +
-          d.name +
-          "</b> — " +
-          d.email +
-          "<br>" +
-          d.subject +
-          "<br>" +
-          "<p>" +
-          d.message +
-          "</p>" +
-          new Date(d.timestamp).toLocaleString();
-        messagesList.appendChild(div);
-      });
-
-      window._msgExport = all;
+      if (!db) return;
+      messagesList.innerHTML = 'Loading...';
+      try {
+        const snap = await db.collection('contact_messages').orderBy('timestamp','desc').limit(200).get();
+        if (snap.empty) {
+          messagesList.innerHTML = '<div class="small">No messages yet.</div>';
+          return;
+        }
+        const rows = [];
+        snap.forEach(doc => {
+          const d = doc.data();
+          const time = d.timestamp ? new Date(d.timestamp).toLocaleString() : '';
+          rows.push(`<tr><td style="width:18%">${escapeHtml(time)}</td><td style="width:20%">${escapeHtml(d.name||'')}</td><td style="width:20%">${escapeHtml(d.email||'')}</td><td>${escapeHtml(d.message||'')}</td></tr>`);
+        });
+        messagesList.innerHTML = '<table class="table"><thead><tr><th>Date</th><th>Name</th><th>Email</th><th>Message</th></tr></thead><tbody>' + rows.join('') + '</tbody></table>';
+      } catch (err) {
+        console.error(err);
+        messagesList.innerHTML = 'Failed to load messages: ' + err.message;
+      }
     }
 
-    refreshMsgs.onclick = loadMessages;
+    refreshMsgs.addEventListener('click', loadMessages);
 
-    exportMsgs.onclick = () => {
-      const blob = new Blob([JSON.stringify(window._msgExport)], {
-        type: "application/json",
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "messages.json";
-      a.click();
-      URL.revokeObjectURL(url);
-    };
+    exportMsgs.addEventListener('click', async () => {
+      if (!db) return alert('DB not ready.');
+      try {
+        const snap = await db.collection('contact_messages').orderBy('timestamp','desc').get();
+        const out = [];
+        snap.forEach(doc => {
+          const d = doc.data();
+          out.push({ id: doc.id, ...d });
+        });
+        const blob = new Blob([JSON.stringify(out,null,2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'contact_messages.json'; document.body.appendChild(a); a.click();
+        a.remove(); URL.revokeObjectURL(url);
+      } catch (err) { console.error(err); alert('Export failed: ' + err.message); }
+    });
+
+    // small helper
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]; });
+    }
+
+    // On load: if firebase isn't ready we still show message; otherwise auth listener will update UI.
+    window.addEventListener('load', () => {
+      if (!window.firebaseConfig) {
+        // leave admin hidden
+      }
+    });
   </script>
+
 </body>
 </html>

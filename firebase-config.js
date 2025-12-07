@@ -1,4 +1,5 @@
-const firebaseConfig = {
+// firebase-config.js
+window.firebaseConfig = {
   apiKey: "AIzaSyDcYaxhTXO2LYPnqGMD_HcJC4hxTMKlV8I",
   authDomain: "shadhin-portfolio.firebaseapp.com",
   projectId: "shadhin-portfolio",
