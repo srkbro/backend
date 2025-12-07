@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Messages Admin</title>
+  <style>
+    body{font-family: sans-serif; max-width:900px;margin:20px auto;padding:10px}
+    .card{border:1px solid #ddd;padding:12px;margin:8px 0;border-radius:8px}
+    .meta{font-size:0.9em;color:#666}
+    button{background:#e53e3e;color:#fff;border:none;padding:6px 10px;border-radius:6px;cursor:pointer}
+  </style>
+</head>
+<body>
+  <h1>Contact messages</h1>
+  <p>Admin pass: <strong><%= admin_pass %></strong></p>
+  <% if (messages.length===0) { %>
+    <p>No messages yet.</p>
+  <% } %>
+  <% messages.forEach(m=>{ %>
+    <div class="card">
+      <div class="meta">ID: <%= m.id %> — <%= m.createdAt %></div>
+      <h3><%= m.name %> <small>&lt;<%= m.email %>&gt;</small></h3>
+      <% if (m.phone) { %><div class="meta">Phone: <%= m.phone %></div><% } %>
+      <p><%= m.message %></p>
+      <form method="post" action="/delete" onsubmit="return confirm('Delete this message?');">
+        <input type="hidden" name="id" value="<%= m.id %>">
+        <input type="hidden" name="admin_pass" value="<%= admin_pass %>">
+        <button type="submit">Delete</button>
+      </form>
+    </div>
+  <% }) %>
+</body>
+</html>
