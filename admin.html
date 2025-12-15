@@ -6,42 +6,79 @@
 <title>Admin Login — Contact Backend</title>
 
 <style>
+:root{
+  --bg:#060b1a;
+  --glass:rgba(255,255,255,.08);
+  --border:rgba(255,255,255,.18);
+  --white:#eef2ff;
+  --muted:#9aa4c7;
+  --accent:#5ac8fa;
+}
+
 body{
   margin:0;
   font-family:-apple-system,BlinkMacSystemFont,Inter,sans-serif;
-  background:#060b1a;
-  color:#eef2ff;
+  background:var(--bg);
+  color:var(--white);
 }
+
 .box{
   max-width:420px;
   margin:100px auto;
-  padding:30px;
-  background:rgba(255,255,255,.08);
+  padding:28px;
+  background:var(--glass);
   backdrop-filter:blur(20px);
+  border:1px solid var(--border);
   border-radius:20px;
 }
+
 input,button{
   width:100%;
   padding:12px;
   margin-top:12px;
   border-radius:10px;
   border:none;
+  font-size:15px;
 }
+
+input{
+  background:rgba(255,255,255,.12);
+  color:var(--white);
+}
+
 button{
-  background:#5ac8fa;
+  background:linear-gradient(180deg,#5ac8fa,#0ea5e9);
   color:#001;
   font-weight:600;
   cursor:pointer;
 }
+
 .hidden{display:none}
+
 table{
   width:100%;
   border-collapse:collapse;
+  margin-top:18px;
 }
-td,th{
-  padding:10px;
+
+th,td{
+  padding:12px;
   border-bottom:1px solid rgba(255,255,255,.15);
+  text-align:left;
+  vertical-align:top;
 }
+
+th{color:var(--muted)}
+
+.btn-del{
+  background:#ef4444;
+  color:#fff;
+  border:none;
+  padding:6px 12px;
+  border-radius:999px;
+  cursor:pointer;
+}
+.btn-del:hover{background:#dc2626}
 </style>
 </head>
 
@@ -50,21 +87,25 @@ td,th{
 <!-- LOGIN -->
 <div class="box" id="loginBox">
   <h2>Admin Login</h2>
-  <input id="email" type="email" placeholder="Email">
+  <input id="email" type="email" placeholder="Admin email">
   <input id="password" type="password" placeholder="Password">
   <button onclick="login()">Login</button>
-  <p id="loginMsg"></p>
+  <p id="loginMsg" style="color:var(--muted)"></p>
 </div>
 
 <!-- DASHBOARD -->
-<div class="box hidden" id="dashBox" style="max-width:1000px">
-  <h2>Contact Messages</h2>
-  <button onclick="logout()">Logout</button>
+<div class="box hidden" id="dashBox" style="max-width:1100px">
+  <h2>📩 Contact Messages</h2>
+  <button onclick="logout()" style="margin-bottom:12px">Logout</button>
 
   <table>
     <thead>
       <tr>
-        <th>Name</th><th>Email</th><th>Message</th><th>Action</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Message</th>
+        <th>Time</th>
+        <th>Action</th>
       </tr>
     </thead>
     <tbody id="data"></tbody>
@@ -78,22 +119,25 @@ td,th{
 <script src="firebase-config.js"></script>
 
 <script>
-const auth=firebase.auth();
-const db=firebase.firestore();
+firebase.initializeApp(window.firebaseConfig);
+
+const auth = firebase.auth();
+const db   = firebase.firestore();
 
 auth.onAuthStateChanged(user=>{
   if(user){
     loginBox.classList.add("hidden");
     dashBox.classList.remove("hidden");
-    loadData();
+    loadMessages();
   }
 });
 
 function login(){
   auth.signInWithEmailAndPassword(
-    email.value,password.value
-  ).catch(e=>{
-    loginMsg.textContent=e.message;
+    email.value,
+    password.value
+  ).catch(err=>{
+    loginMsg.textContent = err.message;
   });
 }
 
@@ -102,29 +146,34 @@ function logout(){
   location.reload();
 }
 
-function loadData(){
-  db.collection("contacts")
-    .orderBy("createdAt","desc")
-    .onSnapshot(snap=>{
+function loadMessages(){
+  db.collection("contact_messages")
+    .orderBy("timestamp","desc")
+    .onSnapshot(snapshot=>{
       data.innerHTML="";
-      snap.forEach(doc=>{
-        const d=doc.data();
-        data.innerHTML+=`
+      snapshot.forEach(doc=>{
+        const d = doc.data();
+        const time = d.timestamp?.toDate?.().toLocaleString() || "";
+        data.innerHTML += `
           <tr>
             <td>${d.name}</td>
             <td>${d.email}</td>
             <td>${d.message}</td>
+            <td>${time}</td>
             <td>
-              <button onclick="del('${doc.id}')">Delete</button>
+              <button class="btn-del" onclick="delMsg('${doc.id}')">
+                Delete
+              </button>
             </td>
-          </tr>`;
+          </tr>
+        `;
       });
     });
 }
 
-function del(id){
-  if(confirm("Delete message?")){
-    db.collection("contacts").doc(id).delete();
+function delMsg(id){
+  if(confirm("Delete this message?")){
+    db.collection("contact_messages").doc(id).delete();
   }
 }
 </script>
