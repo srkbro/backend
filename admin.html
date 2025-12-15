@@ -7,7 +7,7 @@
 
 <style>
 /* =========================================================
-   🍎 iOS 26 / visionOS PREMIUM ADMIN UI (GLASS + MOTION)
+   🍎 iOS 26 / visionOS PREMIUM GLASS ADMIN UI (FULL)
    ========================================================= */
 
 :root{
@@ -22,12 +22,13 @@
   --danger:#ef4444;
   --radius:20px;
   --blur:26px;
-  --spring:cubic-bezier(.2,.8,.2,1);
+  --spring:cubic-bezier(.22,.8,.2,1);
 }
 
 *{
   box-sizing:border-box;
   -webkit-tap-highlight-color:transparent;
+  transition-timing-function:var(--spring);
 }
 
 body{
@@ -42,14 +43,15 @@ body{
   animation:fadeIn .8s ease;
 }
 
-/* ================== GLOBAL MOTION ================== */
+/* ================= GLOBAL ANIMATION ================= */
 @keyframes fadeIn{
   from{opacity:0;transform:translateY(12px)}
   to{opacity:1;transform:none}
 }
 
-/* ================== GLASS CORE ================== */
+/* ================= GLASS CORE ================= */
 .glass{
+  position:relative;
   background:
     linear-gradient(180deg,
       rgba(255,255,255,.22),
@@ -63,19 +65,64 @@ body{
     0 30px 90px rgba(0,0,0,.45),
     inset 0 1px 0 rgba(255,255,255,.35);
   transition:
-    transform .45s var(--spring),
-    box-shadow .45s var(--spring),
+    transform .45s,
+    box-shadow .45s,
     background .45s;
+  animation:glassGlow 8s ease-in-out infinite;
+  will-change:transform, box-shadow;
+}
+
+/* Ambient glow */
+@keyframes glassGlow{
+  0%{box-shadow:0 30px 90px rgba(0,0,0,.45)}
+  50%{box-shadow:0 35px 110px rgba(90,200,250,.28)}
+  100%{box-shadow:0 30px 90px rgba(0,0,0,.45)}
+}
+
+/* Light reflection */
+.glass::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  background:linear-gradient(
+    120deg,
+    transparent 30%,
+    rgba(255,255,255,.18),
+    transparent 70%
+  );
+  opacity:.35;
+  pointer-events:none;
+  transform:translateX(-60%);
+  transition:transform 1.2s;
+}
+
+.glass:hover::before{
+  transform:translateX(60%);
+}
+
+/* Edge glow */
+.glass::after{
+  content:"";
+  position:absolute;
+  inset:-1px;
+  border-radius:inherit;
+  background:linear-gradient(
+    135deg,
+    rgba(90,200,250,.45),
+    rgba(99,102,241,.35),
+    transparent 70%
+  );
+  opacity:.45;
+  filter:blur(14px);
+  z-index:-1;
 }
 
 .glass:hover{
-  transform:translateY(-3px) scale(1.01);
-  box-shadow:
-    0 40px 110px rgba(0,0,0,.55),
-    inset 0 1px 0 rgba(255,255,255,.45);
+  transform:translateY(-4px) scale(1.015);
 }
 
-/* ================== LOGIN ================== */
+/* ================= LOGIN ================= */
 .login{
   max-width:420px;
   margin:14vh auto;
@@ -91,9 +138,9 @@ body{
 .login h2{
   margin:0 0 14px;
   font-weight:600;
-  letter-spacing:.3px;
 }
 
+/* ================= INPUT ================= */
 input{
   width:100%;
   padding:15px 16px;
@@ -103,10 +150,7 @@ input{
   background:rgba(255,255,255,.12);
   color:var(--text);
   font-size:15px;
-  transition:
-    border .35s,
-    background .35s,
-    box-shadow .35s;
+  transition:all .35s;
 }
 
 input:focus{
@@ -116,33 +160,28 @@ input:focus{
   box-shadow:0 0 0 4px var(--accent-soft);
 }
 
-/* ================== BUTTONS ================== */
+/* ================= BUTTON ================= */
 .btn{
   margin-top:18px;
   width:100%;
   padding:15px;
   border-radius:999px;
   border:none;
-  background:
-    linear-gradient(180deg,#7dd3fc,#38bdf8);
+  background:linear-gradient(180deg,#7dd3fc,#38bdf8);
   color:#001;
   font-weight:600;
   font-size:15px;
   cursor:pointer;
-  transition:
-    transform .35s var(--spring),
-    box-shadow .35s,
-    filter .35s;
+  box-shadow:0 10px 30px rgba(90,200,250,.35);
+  transition:transform .35s, box-shadow .35s;
 }
 
 .btn:hover{
   transform:translateY(-2px) scale(1.02);
-  box-shadow:0 18px 40px rgba(56,189,248,.45);
+  box-shadow:0 18px 45px rgba(90,200,250,.55);
 }
 
-.btn:active{
-  transform:scale(.96);
-}
+.btn:active{transform:scale(.96)}
 
 .btn-outline{
   padding:9px 16px;
@@ -151,19 +190,11 @@ input:focus{
   background:rgba(255,255,255,.05);
   color:var(--text);
   cursor:pointer;
-  transition:
-    background .35s,
-    transform .35s;
-}
-
-.btn-outline:hover{
-  background:rgba(255,255,255,.15);
-  transform:translateY(-1px);
 }
 
 .hidden{display:none}
 
-/* ================== TOPBAR ================== */
+/* ================= TOPBAR ================= */
 .topbar{
   position:sticky;
   top:12px;
@@ -173,6 +204,8 @@ input:focus{
   justify-content:space-between;
   align-items:center;
   z-index:10;
+  backdrop-filter:blur(30px) saturate(180%);
+  -webkit-backdrop-filter:blur(30px) saturate(180%);
   animation:slideDown .7s var(--spring);
 }
 
@@ -187,23 +220,20 @@ input:focus{
   font-weight:600;
 }
 
-.actions{
-  display:flex;
-  gap:10px;
-}
+.actions{display:flex;gap:10px}
 
-/* ================== CONTAINER ================== */
+/* ================= CONTAINER ================= */
 .container{
   padding:14px;
   max-width:1100px;
   margin:auto;
 }
 
-/* ================== CARDS ================== */
+/* ================= CARDS ================= */
 .card{
   padding:20px;
   margin-bottom:16px;
-  animation:cardIn .6s var(--spring);
+  animation:cardIn .6s var(--spring), cardFloat 6s ease-in-out infinite;
 }
 
 @keyframes cardIn{
@@ -211,19 +241,15 @@ input:focus{
   to{opacity:1;transform:none}
 }
 
-.card strong{
-  font-size:16px;
-  font-weight:600;
+@keyframes cardFloat{
+  0%{transform:translateY(0)}
+  50%{transform:translateY(-3px)}
+  100%{transform:translateY(0)}
 }
 
-.card p{
-  margin:6px 0;
-  color:rgba(255,255,255,.82);
-}
-
-.card small{
-  color:var(--muted);
-}
+.card strong{font-size:16px;font-weight:600}
+.card p{margin:6px 0;color:rgba(255,255,255,.82)}
+.card small{color:var(--muted)}
 
 .card-actions{
   display:flex;
@@ -231,19 +257,15 @@ input:focus{
   margin-top:12px;
 }
 
-/* ================== DELETE ================== */
+/* ================= DELETE ================= */
 .del{
-  background:
-    linear-gradient(180deg,#fb7185,#ef4444);
+  background:linear-gradient(180deg,#fb7185,#ef4444);
   color:#fff;
   border:none;
   padding:9px 16px;
   border-radius:999px;
   cursor:pointer;
-  font-weight:500;
-  transition:
-    transform .3s,
-    box-shadow .3s;
+  transition:transform .3s, box-shadow .3s;
 }
 
 .del:hover{
@@ -251,7 +273,7 @@ input:focus{
   box-shadow:0 12px 30px rgba(239,68,68,.45);
 }
 
-/* ================== TABLE (DESKTOP) ================== */
+/* ================= TABLE (DESKTOP) ================= */
 @media(min-width:900px){
   .mobile-list{display:none}
 
@@ -259,7 +281,6 @@ input:focus{
     width:100%;
     border-collapse:collapse;
     margin-top:20px;
-    animation:fadeIn .6s ease;
   }
 
   th,td{
@@ -269,21 +290,14 @@ input:focus{
     vertical-align:top;
   }
 
-  th{
-    color:var(--muted);
-    font-weight:500;
-  }
-
-  tr{
-    transition:background .25s;
-  }
+  th{color:var(--muted);font-weight:500}
 
   tr:hover{
     background:rgba(255,255,255,.06);
   }
 }
 
-/* ================== MOBILE ================== */
+/* ================= MOBILE ================= */
 @media(max-width:899px){
   table{display:none}
 }
