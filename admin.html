@@ -3,113 +3,188 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Admin Login — Contact Backend</title>
+<title>Admin Dashboard — Contacts</title>
 
 <style>
 :root{
   --bg:#060b1a;
-  --glass:rgba(255,255,255,.08);
+  --glass:rgba(255,255,255,.12);
   --border:rgba(255,255,255,.18);
-  --white:#eef2ff;
+  --text:#eef2ff;
   --muted:#9aa4c7;
   --accent:#5ac8fa;
+  --danger:#ef4444;
+  --radius:18px;
 }
+
+*{box-sizing:border-box}
 
 body{
   margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,Inter,sans-serif;
-  background:var(--bg);
-  color:var(--white);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Inter,sans-serif;
+  background:
+    radial-gradient(1000px 600px at 10% -10%, #1b255a 0%, transparent 45%),
+    radial-gradient(1000px 600px at 90% 10%, #0ea5e9 0%, transparent 40%),
+    var(--bg);
+  color:var(--text);
 }
 
-.box{
-  max-width:420px;
-  margin:100px auto;
-  padding:28px;
-  background:var(--glass);
-  backdrop-filter:blur(20px);
+/* ========== GLASS CORE ========== */
+.glass{
+  background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.05));
+  backdrop-filter:blur(22px);
+  -webkit-backdrop-filter:blur(22px);
   border:1px solid var(--border);
-  border-radius:20px;
+  border-radius:var(--radius);
+  box-shadow:0 30px 90px rgba(0,0,0,.45);
 }
 
-input,button{
-  width:100%;
-  padding:12px;
-  margin-top:12px;
-  border-radius:10px;
-  border:none;
-  font-size:15px;
+/* ========== LOGIN ========== */
+.login{
+  max-width:420px;
+  margin:15vh auto;
+  padding:28px;
 }
-
+.login h2{margin-top:0}
 input{
-  background:rgba(255,255,255,.12);
-  color:var(--white);
+  width:100%;
+  padding:14px;
+  margin-top:12px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.1);
+  color:var(--text);
 }
-
-button{
+input:focus{outline:none;border-color:var(--accent)}
+.btn{
+  margin-top:16px;
+  width:100%;
+  padding:14px;
+  border-radius:999px;
+  border:none;
   background:linear-gradient(180deg,#5ac8fa,#0ea5e9);
   color:#001;
   font-weight:600;
   cursor:pointer;
 }
-
 .hidden{display:none}
 
-table{
-  width:100%;
-  border-collapse:collapse;
-  margin-top:18px;
+/* ========== DASHBOARD ========== */
+.topbar{
+  position:sticky;
+  top:12px;
+  margin:12px;
+  padding:14px 18px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  z-index:10;
+}
+.topbar h3{margin:0;font-size:18px}
+
+.actions{
+  display:flex;
+  gap:10px;
 }
 
-th,td{
+.btn-outline{
+  padding:8px 14px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--text);
+  cursor:pointer;
+}
+
+.container{
   padding:12px;
-  border-bottom:1px solid rgba(255,255,255,.15);
-  text-align:left;
-  vertical-align:top;
+  max-width:1100px;
+  margin:auto;
 }
 
-th{color:var(--muted)}
+/* ========== CARDS (MOBILE FIRST) ========== */
+.card{
+  padding:18px;
+  margin-bottom:14px;
+}
+.card strong{font-size:16px}
+.card p{margin:6px 0;color:rgba(255,255,255,.8)}
+.card small{color:var(--muted)}
 
-.btn-del{
-  background:#ef4444;
+.card-actions{
+  display:flex;
+  justify-content:flex-end;
+  margin-top:10px;
+}
+
+.del{
+  background:var(--danger);
   color:#fff;
   border:none;
-  padding:6px 12px;
+  padding:8px 14px;
   border-radius:999px;
   cursor:pointer;
 }
-.btn-del:hover{background:#dc2626}
+
+/* ========== DESKTOP TABLE ========== */
+@media(min-width:900px){
+  .mobile-list{display:none}
+  table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:18px;
+  }
+  th,td{
+    padding:12px;
+    border-bottom:1px solid rgba(255,255,255,.15);
+    text-align:left;
+    vertical-align:top;
+  }
+  th{color:var(--muted)}
+}
+
+/* ========== MOBILE ========== */
+@media(max-width:899px){
+  table{display:none}
+}
 </style>
 </head>
 
 <body>
 
 <!-- LOGIN -->
-<div class="box" id="loginBox">
+<div id="loginBox" class="login glass">
   <h2>Admin Login</h2>
   <input id="email" type="email" placeholder="Admin email">
   <input id="password" type="password" placeholder="Password">
-  <button onclick="login()">Login</button>
+  <button class="btn" onclick="login()">Login</button>
   <p id="loginMsg" style="color:var(--muted)"></p>
 </div>
 
 <!-- DASHBOARD -->
-<div class="box hidden" id="dashBox" style="max-width:1100px">
-  <h2>📩 Contact Messages</h2>
-  <button onclick="logout()" style="margin-bottom:12px">Logout</button>
+<div id="dashBox" class="hidden">
+  <div class="topbar glass">
+    <h3>📩 Contact Messages</h3>
+    <div class="actions">
+      <button class="btn-outline" onclick="exportCSV()">Export CSV</button>
+      <button class="btn-outline" onclick="logout()">Logout</button>
+    </div>
+  </div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Email</th>
-        <th>Message</th>
-        <th>Time</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody id="data"></tbody>
-  </table>
+  <div class="container">
+    <!-- MOBILE -->
+    <div id="mobileList" class="mobile-list"></div>
+
+    <!-- DESKTOP -->
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th><th>Email</th><th>Message</th><th>Time</th><th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="tableData"></tbody>
+    </table>
+  </div>
 </div>
 
 <!-- Firebase -->
@@ -121,60 +196,81 @@ th{color:var(--muted)}
 <script>
 firebase.initializeApp(window.firebaseConfig);
 
-const auth = firebase.auth();
-const db   = firebase.firestore();
+const auth=firebase.auth();
+const db=firebase.firestore();
+
+let allData=[];
 
 auth.onAuthStateChanged(user=>{
   if(user){
     loginBox.classList.add("hidden");
     dashBox.classList.remove("hidden");
-    loadMessages();
+    loadData();
   }
 });
 
 function login(){
-  auth.signInWithEmailAndPassword(
-    email.value,
-    password.value
-  ).catch(err=>{
-    loginMsg.textContent = err.message;
-  });
+  auth.signInWithEmailAndPassword(email.value,password.value)
+  .catch(e=>loginMsg.textContent=e.message);
 }
-
 function logout(){
   auth.signOut();
   location.reload();
 }
 
-function loadMessages(){
+function loadData(){
   db.collection("contact_messages")
     .orderBy("timestamp","desc")
-    .onSnapshot(snapshot=>{
-      data.innerHTML="";
-      snapshot.forEach(doc=>{
-        const d = doc.data();
-        const time = d.timestamp?.toDate?.().toLocaleString() || "";
-        data.innerHTML += `
+    .onSnapshot(snap=>{
+      allData=[];
+      tableData.innerHTML="";
+      mobileList.innerHTML="";
+      snap.forEach(doc=>{
+        const d=doc.data();
+        const time=d.timestamp?.toDate?.().toLocaleString()||"";
+        allData.push({name:d.name,email:d.email,message:d.message,time});
+
+        /* desktop */
+        tableData.innerHTML+=`
           <tr>
             <td>${d.name}</td>
             <td>${d.email}</td>
             <td>${d.message}</td>
             <td>${time}</td>
-            <td>
-              <button class="btn-del" onclick="delMsg('${doc.id}')">
-                Delete
-              </button>
-            </td>
-          </tr>
-        `;
+            <td><button class="del" onclick="del('${doc.id}')">Delete</button></td>
+          </tr>`;
+
+        /* mobile */
+        mobileList.innerHTML+=`
+          <div class="card glass">
+            <strong>${d.name}</strong>
+            <p>${d.message}</p>
+            <small>${d.email} • ${time}</small>
+            <div class="card-actions">
+              <button class="del" onclick="del('${doc.id}')">Delete</button>
+            </div>
+          </div>`;
       });
     });
 }
 
-function delMsg(id){
+function del(id){
   if(confirm("Delete this message?")){
     db.collection("contact_messages").doc(id).delete();
   }
+}
+
+/* ========== CSV EXPORT ========== */
+function exportCSV(){
+  let csv="Name,Email,Message,Time\n";
+  allData.forEach(r=>{
+    csv+=`"${r.name}","${r.email}","${r.message.replace(/"/g,'""')}","${r.time}"\n`;
+  });
+  const blob=new Blob([csv],{type:"text/csv"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="contact_messages.csv";
+  a.click();
 }
 </script>
 
